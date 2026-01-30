@@ -133,9 +133,43 @@ def aplicar_ruido(patron, porcentaje_ruido):
         ruidoso[idx] = -ruidoso[idx]
     return ruidoso
 
+def calculate_similarity(original, reconstructed):
+    """Calcula el porcentaje de similitud entre dos patrones."""
+    matches = np.sum(original == reconstructed)
+    total = len(original)
+    return (matches / total) * 100
+
+def create_noisy_examples():
+    """Genera ejemplos ruidosos de cada letra y los guarda en CSV en la carpeta test/."""
+    test_folder = 'test'
+    if not os.path.exists(test_folder):
+        os.makedirs(test_folder)
+
+    csv_files = ['A.csv', 'B.csv', 'C.csv', 'D.csv', 'E.csv']
+    noise_levels = [0, 10, 20, 30, 40, 50]  # Porcentajes de ruido
+
+    for csv_file in csv_files:
+        if os.path.exists(csv_file):
+            data = pd.read_csv(csv_file, header=None)
+            matriz = data.values
+            matriz = np.where(matriz == 0, -1, matriz)
+            original_pattern = matriz.flatten()
+
+            for noise in noise_levels:
+                noisy_pattern = aplicar_ruido(original_pattern, noise)
+                noisy_matrix = noisy_pattern.reshape(10, 10)
+                output_filename = os.path.join(test_folder, f'{csv_file.split(".")[0]}_ruido_{noise}.csv')
+                pd.DataFrame(noisy_matrix).to_csv(output_filename, index=False, header=False)
+                print(f"Ejemplo ruidoso guardado: {output_filename}")
+        else:
+            print(f"Archivo {csv_file} no encontrado.")
+
+    print("Generación de ejemplos ruidosos completada.")
+
 if __name__ == "__main__":
     print("Bienvenido al programa de la red de Hopfield")
     create_sample_csv()
+    create_noisy_examples()
 
     results_folder = 'results'
     if not os.path.exists(results_folder):
