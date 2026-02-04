@@ -139,6 +139,21 @@ def calculate_similarity(original, reconstructed):
     total = len(original)
     return (matches / total) * 100
 
+def calculate_reconstruction_difference(noisy, reconstructed):
+    """
+    Calcula métricas de diferencia entre el patrón ruidoso (entrada) y el reconstruido.
+    
+    Returns:
+    - hamming_diff: Número de bits que cambiaron durante la reconstrucción
+    - change_percentage: Porcentaje de bits que cambiaron
+    - flipped_indices: Índices de los bits que cambiaron
+    """
+    flipped_mask = noisy != reconstructed
+    hamming_diff = np.sum(flipped_mask)
+    change_percentage = (hamming_diff / len(noisy)) * 100
+    flipped_indices = np.where(flipped_mask)[0]
+    return hamming_diff, change_percentage, flipped_indices
+
 def create_noisy_examples():
     """Genera ejemplos ruidosos de cada letra y los guarda en CSV en la carpeta test/."""
     test_folder = 'test'
@@ -241,11 +256,17 @@ if __name__ == "__main__":
                         reconstruido = hopfield_net.update(patron_ruidoso, steps=10)
                         print("Patrón reconstruido:")
                         print(reconstruido.reshape(10,10))
-
+                        
+                        # Calcular métricas de diferencia entre entrada (ruidosa) y reconstruida
+                        hamming_diff, change_pct, flipped_idx = calculate_reconstruction_difference(patron_ruidoso, reconstruido)
+                        similarity_to_original = calculate_similarity(input_pattern, reconstruido)
+                        
+                        # Mostrar métricas en el título del gráfico
+                        title = f"Ruido: {porcentaje_ruido}% | Diferencia: {change_pct:.1f}% | Similitud: {similarity_to_original:.1f}%"
                         mostrar_comparacion(input_pattern.reshape(10,10),
                                             patron_ruidoso.reshape(10,10),
                                             reconstruido.reshape(10,10),
-                                            titulo=f"Original vs Ruido {porcentaje_ruido}% vs Reconstruido")
+                                            titulo=title)
 
                         output_filename = os.path.join(results_folder, f'salida_{csv_files[indices[prueba_idx]].split(".")[0]}_ruido{int(porcentaje_ruido)}.csv')
                         pd.DataFrame(reconstruido.reshape(10,10)).to_csv(output_filename, index=False, header=False)
