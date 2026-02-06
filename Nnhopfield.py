@@ -108,16 +108,20 @@ def create_sample_csv():
     print("Archivos CSV de ejemplo (A.csv, B.csv, C.csv, D.csv, E.csv) creados en el directorio actual.")
 
 def mostrar_comparacion(original, ruidoso, reconstruido, titulo="Comparación patrones"):
+    # Normalizar a 0-1: 1=negro, -1=blanco
+    def normalize_pattern(p):
+        return (1 - p) / 2  # 1 -> 0 (negro), -1 -> 1 (blanco)
+    
     fig, axs = plt.subplots(1, 3, figsize=(12, 4))
-    axs[0].imshow(original, cmap='gray')
+    axs[0].imshow(normalize_pattern(original), cmap='gray')
     axs[0].set_title("Original")
     axs[0].axis('off')
 
-    axs[1].imshow(ruidoso, cmap='gray')
+    axs[1].imshow(normalize_pattern(ruidoso), cmap='gray')
     axs[1].set_title("Con ruido")
     axs[1].axis('off')
 
-    axs[2].imshow(reconstruido, cmap='gray')
+    axs[2].imshow(normalize_pattern(reconstruido), cmap='gray')
     axs[2].set_title("Reconstruido")
     axs[2].axis('off')
 
